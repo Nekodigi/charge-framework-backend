@@ -1,20 +1,13 @@
-package handler
+package quota
 
 import (
 	"log"
 	"strconv"
 
-	infraFirestore "github.com/Nekodigi/charge-framework-backend/infrastructure/firestore"
 	"github.com/gin-gonic/gin"
 )
 
-type (
-	Quota struct {
-		fs *infraFirestore.Firestore
-	}
-)
-
-func (q *Quota) Handle(e *gin.Engine) {
+func (q *Quota) HandleUseQuota(e *gin.Engine) {
 	e.POST("/use_quota", func(c *gin.Context) {
 		serviceId := c.Query("service_id")
 		userId := c.Query("user_id")
@@ -23,17 +16,17 @@ func (q *Quota) Handle(e *gin.Engine) {
 			log.Println(err)
 		}
 
-		user := q.fs.GetUserById(serviceId, userId)
-		service := q.fs.GetServiceById(serviceId)
+		user := q.Fs.GetUserById(serviceId, userId)
+		service := q.Fs.GetServiceById(serviceId)
 		if amount > user.RemainQuota { //update quota if possible
-			if !q.fs.UpdateUserQuota(&user) {
+			if !q.Fs.UpdateUserQuota(&user) {
 				c.JSON(402, gin.H{
 					"message": "QUOTA_NOT_ENOUGH",
 				})
 				return
 			}
 		} else if user.Plan == "free" && amount > service.RemainQuota {
-			if !q.fs.UpdateServiceQuota(&service) {
+			if !q.Fs.UpdateServiceQuota(&service) {
 				c.JSON(402, gin.H{
 					"message": "GLOBAL_QUOTA_NOT_ENOUGH",
 				})
@@ -44,8 +37,8 @@ func (q *Quota) Handle(e *gin.Engine) {
 		if user.Plan == "free" {
 			service.RemainQuota -= amount
 		}
-		q.fs.UpdateUser(user)
-		q.fs.UpdateService(service)
+		q.Fs.UpdateUser(user)
+		q.Fs.UpdateService(service)
 		c.JSON(200, gin.H{
 			"message": "OK",
 		})

@@ -53,7 +53,7 @@ func (a *Afterpay) Handle(e *gin.Engine) {
 			user.AllocQuota = plan.Quota
 			a.fs.UpdateUser(user)
 			service.RemainQuota += user.AllocQuota * plan.QuotaLeak
-			fmt.Println("Checkout was successful!")
+			fmt.Println("Subscription was created!")
 		// ... handle other event types
 		case "invoice.payment_succeeded": //quota update for free plan will be delegated
 			user := a.fs.GetUserBySubId(event.Data.Object["subscription"].(string))

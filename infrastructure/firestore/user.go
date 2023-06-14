@@ -49,14 +49,15 @@ func (fs *Firestore) UpdateUser(user models.User) {
 }
 
 func (fs *Firestore) CreateUser(serviceId string, userId string) models.User {
+	srv := fs.GetServiceById(serviceId)
 	ctx := context.Background()
 	user := models.User{
 		Id:           userId,
 		ServiceId:    serviceId,
 		Plan:         "free",
 		Status:       "",
-		AllocQuota:   0,
-		RemainQuota:  0,
+		AllocQuota:   srv.Plan["free"].Quota,
+		RemainQuota:  srv.Plan["free"].Quota,
 		Subscription: "",
 		UpdateAt:     utils.EndOfThisMonth(),
 	}

@@ -19,12 +19,6 @@ func (fs *Firestore) GetServiceById(serviceId string) models.Service {
 	}
 	//bind to user
 	var service models.Service
-	// j, _ := json.Marshal(doc.Data())
-	// fmt.Printf("Document data: %#v\n", string(j))
-	// err = json.Unmarshal(j, &service)
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
 	doc.DataTo(&service)
 	//fmt.Printf("doc data: %#v\n", doc.Data())
 	for key, plan := range doc.Data()["plan"].(map[string]interface{}) {
