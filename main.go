@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"os"
 
+	"cloud.google.com/go/firestore"
 	"github.com/Nekodigi/charge-framework-backend/handler"
 	infraFirestore "github.com/Nekodigi/charge-framework-backend/infrastructure/firestore"
 	"github.com/gin-gonic/gin"
@@ -17,7 +20,29 @@ func main() {
 		if err != nil {
 			log.Fatal("Error loading .env file")
 		}
-		infraFirestore.NewFirestore().GetServiceById("test")
+		serviceId := "test"
+		userId := "u0006"
+		// planId := "basic"
+		fs := infraFirestore.NewFirestore()
+		fmt.Println("tx ready!")
+		ctx := context.Background()
+		fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+			fmt.Println("tx start!")
+			user := fs.GetUserByIdTx(tx, serviceId, userId)
+			_ = fs.GetServiceByIdTx(tx, serviceId)
+
+			fmt.Println(user)
+			//user.Subscription = ""
+
+			// user.Plan = planId
+			// fmt.Println(serviceId, service)
+			// plan := service.Plan[user.Plan]
+			// user.AllocQuota = plan.Quota
+			// fs.UpdateUserTx(tx, user)
+			// fmt.Println(user, service)
+			fmt.Println("Subscription was created!")
+			return nil
+		})
 		//ops.IssuePromo()
 	} else {
 

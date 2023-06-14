@@ -15,7 +15,7 @@ var (
 type (
 	Firestore struct {
 		app    *firebase.App
-		client *firestore.Client
+		Client *firestore.Client
 	}
 )
 
@@ -35,7 +35,7 @@ func NewFirestore() *Firestore {
 
 	fs = &Firestore{
 		app:    app,
-		client: client,
+		Client: client,
 	}
 
 	return fs

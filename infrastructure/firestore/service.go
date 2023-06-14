@@ -7,17 +7,12 @@ import (
 	"log"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/Nekodigi/charge-framework-backend/models"
 	"github.com/Nekodigi/charge-framework-backend/utils"
 )
 
-func (fs *Firestore) GetServiceById(serviceId string) models.Service {
-	ctx := context.Background()
-	doc, err := fs.client.Collection("payment").Doc(serviceId).Get(ctx)
-	if err != nil {
-		fmt.Errorf("Error getting service: %v", err)
-	}
-	//bind to user
+func DocToService(doc *firestore.DocumentSnapshot) models.Service {
 	var service models.Service
 	doc.DataTo(&service)
 	//fmt.Printf("doc data: %#v\n", doc.Data())
@@ -30,13 +25,37 @@ func (fs *Firestore) GetServiceById(serviceId string) models.Service {
 		service.Plan[key] = p
 	}
 	service.UpdateAt = doc.Data()["updateAt"].(time.Time)
-	//fmt.Printf("Service data: %#v\n", service)
 	return service
+}
+
+func (fs *Firestore) GetServiceById(serviceId string) models.Service {
+	ctx := context.Background()
+	doc, err := fs.Client.Collection("payment").Doc(serviceId).Get(ctx)
+	if err != nil {
+		fmt.Errorf("Error getting service: %v", err)
+	}
+	return DocToService(doc)
+}
+
+func (fs *Firestore) GetServiceByIdTx(tx *firestore.Transaction, serviceId string) models.Service {
+	doc, err := tx.Get(fs.Client.Collection("payment").Doc(serviceId))
+	if err != nil {
+		fmt.Errorf("Error getting service: %v", err)
+	}
+	fmt.Println(doc, serviceId)
+	return DocToService(doc)
 }
 
 func (fs *Firestore) UpdateService(service models.Service) {
 	ctx := context.Background()
-	_, err := fs.client.Collection("payment").Doc(service.Id).Set(ctx, service)
+	_, err := fs.Client.Collection("payment").Doc(service.Id).Set(ctx, service)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func (fs *Firestore) UpdateServiceTx(tx *firestore.Transaction, service models.Service) {
+	err := tx.Set(fs.Client.Collection("payment").Doc(service.Id), service)
 	if err != nil {
 		log.Fatalln(err)
 	}

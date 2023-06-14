@@ -1,6 +1,8 @@
 package quota
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -8,6 +10,10 @@ func (q *Quota) HandleCheckQuota(e *gin.Engine) {
 	e.POST("/check_quota", func(c *gin.Context) {
 		serviceId := c.Query("service_id")
 		userId := c.Query("user_id")
+		if serviceId == "" || userId == "" {
+			c.Status(http.StatusBadRequest)
+			return
+		}
 
 		user := q.Fs.GetUserById(serviceId, userId)
 		service := q.Fs.GetServiceById(serviceId)

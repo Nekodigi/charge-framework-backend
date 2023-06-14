@@ -2,6 +2,7 @@ package quota
 
 import (
 	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,10 @@ func (q *Quota) HandleUseQuota(e *gin.Engine) {
 		amount, err := strconv.ParseFloat(c.Query("amount"), 64)
 		if err != nil {
 			log.Println(err)
+		}
+		if serviceId == "" || userId == "" || c.Query("amount") == "" {
+			c.Status(http.StatusBadRequest)
+			return
 		}
 
 		user := q.Fs.GetUserById(serviceId, userId)

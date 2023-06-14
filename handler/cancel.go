@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
 
 	infraFirestore "github.com/Nekodigi/charge-framework-backend/infrastructure/firestore"
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,10 @@ func (q *Cancel) Handle(e *gin.Engine) {
 	e.POST("/cancel", func(c *gin.Context) {
 		serviceId := c.Query("service_id")
 		userId := c.Query("user_id")
+		if serviceId == "" || userId == "" {
+			c.Status(http.StatusBadRequest)
+			return
+		}
 
 		user := q.fs.GetUserById(serviceId, userId)
 

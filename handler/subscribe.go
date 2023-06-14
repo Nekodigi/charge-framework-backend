@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v74"
@@ -16,9 +17,16 @@ type (
 
 func (co *Subscribe) Handle(e *gin.Engine) {
 	// our basic charge API route
-	e.POST("/subscribe", func(c *gin.Context) {
+	stripe.Key = stripeSecret
+	e.GET("/subscribe", func(c *gin.Context) {
+		serviceId := c.Query("service_id")
+		planId := c.Query("plan_id")
+		userId := c.Query("user_id")
 
-		stripe.Key = co.stripeSecret
+		if serviceId == "" || userId == "" || planId == "" {
+			c.Status(http.StatusBadRequest)
+			return
+		}
 
 		params := &stripe.CheckoutSessionParams{
 			LineItems: []*stripe.CheckoutSessionLineItemParams{
@@ -32,9 +40,9 @@ func (co *Subscribe) Handle(e *gin.Engine) {
 			SuccessURL:          stripe.String("https://example.com/success"),
 			CancelURL:           stripe.String("https://example.com/success"),
 		}
-		params.AddMetadata("service_id", c.Query("service_id"))
-		params.AddMetadata("plan_id", c.Query("plan_id"))
-		params.AddMetadata("user_id", c.Query("user_id"))
+		params.AddMetadata("service_id", serviceId)
+		params.AddMetadata("plan_id", planId)
+		params.AddMetadata("user_id", userId)
 		params.AddExpand("payment_intent") // be careful
 
 		s, _ := session.New(params)
