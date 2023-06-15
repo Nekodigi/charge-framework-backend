@@ -1,4 +1,4 @@
-package handler
+package subscription
 
 import (
 	"context"
@@ -10,21 +10,13 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
-	infraFirestore "github.com/Nekodigi/charge-framework-backend/infrastructure/firestore"
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v74"
 )
 
-type (
-	Afterpay struct {
-		stripeSecret string
-		fs           *infraFirestore.Firestore
-	}
-)
-
-func (a *Afterpay) Handle(e *gin.Engine) {
+func (a *Subscription) HandleAfterPay(e *gin.Engine) {
 	e.POST("/afterpay", func(c *gin.Context) {
-		stripe.Key = a.stripeSecret
+		stripe.Key = a.StripeSecret
 
 		body, _ := ioutil.ReadAll(c.Request.Body)
 		//log.Println("body = ", string(body))
@@ -53,16 +45,16 @@ func (a *Afterpay) Handle(e *gin.Engine) {
 			}
 			fmt.Println("tx ready!")
 			ctx := context.Background()
-			a.fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+			a.Fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 				fmt.Println("tx start!")
-				user := a.fs.GetUserByIdTx(tx, serviceId, userId)
+				user := a.Fs.GetUserByIdTx(tx, serviceId, userId)
 				user.Subscription = event.Data.Object["subscription"].(string)
-				service := a.fs.GetServiceByIdTx(tx, serviceId)
+				service := a.Fs.GetServiceByIdTx(tx, serviceId)
 				user.Plan = planId
 				fmt.Println(serviceId, service)
 				plan := service.Plan[user.Plan]
 				user.AllocQuota = plan.Quota
-				a.fs.UpdateUserTx(tx, user)
+				a.Fs.UpdateUserTx(tx, user)
 				fmt.Println(user, service)
 				fmt.Println("Subscription was created!")
 				return nil
@@ -71,25 +63,25 @@ func (a *Afterpay) Handle(e *gin.Engine) {
 		// ... handle other event types
 		case "invoice.payment_succeeded": //quota update for free plan will be delegated
 			ctx := context.Background()
-			a.fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-				user := a.fs.GetUserBySubIdTx(tx, event.Data.Object["subscription"].(string))
-				service := a.fs.GetServiceByIdTx(tx, user.ServiceId)
+			a.Fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+				user := a.Fs.GetUserBySubIdTx(tx, event.Data.Object["subscription"].(string))
+				service := a.Fs.GetServiceByIdTx(tx, user.ServiceId)
 				user.RemainQuota = user.AllocQuota
 				service.RemainQuota += user.AllocQuota * service.Plan[user.Plan].QuotaLeak
-				a.fs.UpdateUserTx(tx, user)
-				a.fs.UpdateServiceTx(tx, service)
+				a.Fs.UpdateUserTx(tx, user)
+				a.Fs.UpdateServiceTx(tx, service)
 				fmt.Println("PaymentIntent was successful!")
 				return nil
 			})
 
 		case "customer.subscription.deleted":
-			user := a.fs.GetUserBySubId(event.Data.Object["id"].(string))
+			user := a.Fs.GetUserBySubId(event.Data.Object["id"].(string))
 			fmt.Println(user)
-			service := a.fs.GetServiceById(user.ServiceId)
+			service := a.Fs.GetServiceById(user.ServiceId)
 			user.Plan = "free"
 			user.AllocQuota = service.Plan["free"].Quota
 			user.RemainQuota = user.AllocQuota
-			a.fs.UpdateUser(user)
+			a.Fs.UpdateUser(user)
 			fmt.Println("Subscription was canceled")
 		default:
 			fmt.Fprintf(os.Stderr, "Unhandled event type: %s\n", event.Type)

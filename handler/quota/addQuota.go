@@ -9,9 +9,9 @@ import (
 )
 
 func (q *Quota) HandleAddQuota(e *gin.Engine) {
-	e.POST("/add_quota", func(c *gin.Context) {
-		serviceId := c.Query("service_id")
-		userId := c.Query("user_id")
+	e.POST("/add_quota/:service_id/:user_id", func(c *gin.Context) {
+		serviceId := c.Param("service_id")
+		userId := c.Param("user_id")
 		amount, err := strconv.ParseFloat(c.Query("amount"), 64)
 		if err != nil {
 			log.Println(err)

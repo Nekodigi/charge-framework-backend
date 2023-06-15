@@ -1,4 +1,4 @@
-package handler
+package subscription
 
 import (
 	"fmt"
@@ -9,16 +9,10 @@ import (
 	"github.com/stripe/stripe-go/v74/checkout/session"
 )
 
-type (
-	Subscribe struct {
-		stripeSecret string
-	}
-)
-
-func (co *Subscribe) Handle(e *gin.Engine) {
+func (co *Subscription) HandleSubscribe(e *gin.Engine) {
 	// our basic charge API route
-	stripe.Key = stripeSecret
-	e.GET("/subscribe", func(c *gin.Context) {
+	stripe.Key = co.StripeSecret
+	e.GET("/subscribe/:service_id/:user_id", func(c *gin.Context) {
 		serviceId := c.Query("service_id")
 		planId := c.Query("plan_id")
 		userId := c.Query("user_id")

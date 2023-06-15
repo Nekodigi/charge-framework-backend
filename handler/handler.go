@@ -2,11 +2,11 @@ package handler
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/Nekodigi/charge-framework-backend/handler/quota"
+	"github.com/Nekodigi/charge-framework-backend/handler/subscription"
 	infraFirestore "github.com/Nekodigi/charge-framework-backend/infrastructure/firestore"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -21,7 +21,7 @@ var (
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Printf("Error loading .env file")
 	}
 
 	stripeSecret = os.Getenv("SK_TEST_KEY")
@@ -48,9 +48,7 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func Router(e *gin.Engine) {
 	e.Use(CORSMiddleware())
-	(&Subscribe{stripeSecret}).Handle(e)
-	(&Afterpay{stripeSecret, fs}).Handle(e)
+	(&subscription.Subscription{stripeSecret, fs}).Handle(e)
 	(&quota.Quota{Fs: fs}).Handle(e)
-	(&Cancel{fs}).Handle(e)
 	e.GET("/ping", func(ctx *gin.Context) { ctx.String(http.StatusOK, "pong") })
 }

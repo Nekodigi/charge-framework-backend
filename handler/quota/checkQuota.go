@@ -7,9 +7,9 @@ import (
 )
 
 func (q *Quota) HandleCheckQuota(e *gin.Engine) {
-	e.POST("/check_quota", func(c *gin.Context) {
-		serviceId := c.Query("service_id")
-		userId := c.Query("user_id")
+	e.POST("/check_quota/:service_id/:user_id", func(c *gin.Context) {
+		serviceId := c.Param("service_id")
+		userId := c.Param("user_id")
 		if serviceId == "" || userId == "" {
 			c.Status(http.StatusBadRequest)
 			return

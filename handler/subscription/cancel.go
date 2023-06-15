@@ -1,30 +1,23 @@
-package handler
+package subscription
 
 import (
 	"fmt"
 	"net/http"
 
-	infraFirestore "github.com/Nekodigi/charge-framework-backend/infrastructure/firestore"
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/sub"
 )
 
-type (
-	Cancel struct {
-		fs *infraFirestore.Firestore
-	}
-)
-
-func (q *Cancel) Handle(e *gin.Engine) {
-	e.POST("/cancel", func(c *gin.Context) {
-		serviceId := c.Query("service_id")
-		userId := c.Query("user_id")
+func (q *Subscription) HandleCancel(e *gin.Engine) {
+	e.POST("/cancel/:service_id/:user_id", func(c *gin.Context) {
+		serviceId := c.Param("service_id")
+		userId := c.Param("user_id")
 		if serviceId == "" || userId == "" {
 			c.Status(http.StatusBadRequest)
 			return
 		}
 
-		user := q.fs.GetUserById(serviceId, userId)
+		user := q.Fs.GetUserById(serviceId, userId)
 
 		_, err := sub.Cancel(
 			user.Subscription,
