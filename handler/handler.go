@@ -21,7 +21,7 @@ var (
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Cannot find .env file")
 	}
 
 	stripeSecret = os.Getenv("SK_TEST_KEY")

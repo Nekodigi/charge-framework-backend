@@ -50,6 +50,9 @@ func (co *Subscribe) Handle(e *gin.Engine) {
 			s.PaymentStatus == "unpaid" {
 			fmt.Println(`register:${name}`)
 		}
-		c.Redirect(303, s.URL)
+		//c.Redirect(303, s.URL)
+		c.JSON(200, gin.H{
+			"url": s.URL,
+		})
 	})
 }

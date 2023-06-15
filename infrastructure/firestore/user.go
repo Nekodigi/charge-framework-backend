@@ -106,19 +106,22 @@ func (fs *Firestore) CreateUser(serviceId string, userId string) models.User {
 	if err != nil {
 		log.Fatalln(err)
 	} else {
-		fmt.Printf("Created new user:%s", user.Id)
+		fmt.Printf("Created new user:%s\n", user.Id)
 	}
 	return user
 }
+
+// Don't update user because it should write after read
 func (fs *Firestore) CreateUserTx(tx *firestore.Transaction, serviceId string, userId string) models.User {
 	srv := fs.GetServiceByIdTx(tx, serviceId)
 	user := fs.NewUser(userId, srv)
-	err := tx.Set(fs.Client.Collection("payment").Doc(serviceId).Collection("users").Doc(userId), user)
-	if err != nil {
-		log.Fatalln(err)
-	} else {
-		fmt.Printf("Created new user:%s", user.Id)
-	}
+	// err := tx.Set(fs.Client.Collection("payment").Doc(serviceId).Collection("users").Doc("userId"), user)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// } else {
+	//
+	// }
+	fmt.Printf("Created new user TX:%s\n", user)
 	return user
 }
 
