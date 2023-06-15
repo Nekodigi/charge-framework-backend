@@ -20,7 +20,8 @@ func main() {
 			fmt.Println("Error loading .env file")
 		}
 		serviceId := "test"
-		userId := "u0006"
+		userId := "u0007"
+		planId := "basic"
 		// planId := "basic"
 		fs := infraFirestore.NewFirestore()
 		fmt.Println("tx ready!")
@@ -28,17 +29,14 @@ func main() {
 		fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 			fmt.Println("tx start!")
 			user := fs.GetUserByIdTx(tx, serviceId, userId)
-			_ = fs.GetServiceByIdTx(tx, serviceId)
-
-			fmt.Println(user)
-			//user.Subscription = ""
-
-			// user.Plan = planId
-			// fmt.Println(serviceId, service)
-			// plan := service.Plan[user.Plan]
-			// user.AllocQuota = plan.Quota
-			// fs.UpdateUserTx(tx, user)
-			// fmt.Println(user, service)
+			user.Subscription = ""
+			service := fs.GetServiceByIdTx(tx, serviceId)
+			user.Plan = planId
+			fmt.Println(serviceId, service)
+			plan := service.Plan[user.Plan]
+			user.AllocQuota = plan.Quota
+			fs.UpdateUserTx(tx, user)
+			fmt.Println(user, service)
 			fmt.Println("Subscription was created!")
 			return nil
 		})
