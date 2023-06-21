@@ -12,10 +12,10 @@ import (
 func (co *Subscription) HandleSubscribe(e *gin.Engine) {
 	// our basic charge API route
 	stripe.Key = co.StripeSecret
-	e.GET("/subscribe/:service_id/:user_id", func(c *gin.Context) {
-		serviceId := c.Query("service_id")
-		planId := c.Query("plan_id")
-		userId := c.Query("user_id")
+	e.GET("/subscribe/:service_id/:user_id/:plan_id", func(c *gin.Context) {
+		serviceId := c.Param("service_id")
+		planId := c.Param("plan_id")
+		userId := c.Param("user_id")
 
 		if serviceId == "" || userId == "" || planId == "" {
 			c.Status(http.StatusBadRequest)
