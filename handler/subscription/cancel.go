@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Nekodigi/charge-framework-backend/consts"
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/sub"
 )
@@ -26,12 +27,12 @@ func (q *Subscription) HandleCancel(e *gin.Engine) {
 		if err != nil {
 			fmt.Errorf("Error canceling subscription: %v", err)
 			c.JSON(400, gin.H{
-				"message": "FAILED",
+				"status": consts.FAILED,
 			})
 		} else {
 			fmt.Printf("Subscription canceled!")
 			c.JSON(200, gin.H{
-				"message": "OK",
+				"status": consts.OK,
 			})
 		}
 	})

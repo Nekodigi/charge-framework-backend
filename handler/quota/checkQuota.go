@@ -3,6 +3,7 @@ package quota
 import (
 	"net/http"
 
+	"github.com/Nekodigi/charge-framework-backend/consts"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +24,7 @@ func (q *Quota) HandleCheckQuota(e *gin.Engine) {
 				c.JSON(402, gin.H{
 					"allocQuota":  user.AllocQuota,
 					"remainQuota": user.RemainQuota,
-					"message":     "QUOTA_NOT_ENOUGH",
+					"status":      consts.QUOTA_NOT_ENOUGH,
 				})
 				return
 			}
@@ -32,7 +33,7 @@ func (q *Quota) HandleCheckQuota(e *gin.Engine) {
 				c.JSON(402, gin.H{
 					"allocQuota":  user.AllocQuota,
 					"remainQuota": user.RemainQuota,
-					"message":     "GLOBAL_QUOTA_NOT_ENOUGH",
+					"status":      consts.GLOBAL_QUOTA_NOT_ENOUGH,
 				})
 				return
 			}
@@ -40,7 +41,7 @@ func (q *Quota) HandleCheckQuota(e *gin.Engine) {
 		c.JSON(200, gin.H{
 			"allocQuota":  user.AllocQuota,
 			"remainQuota": user.RemainQuota,
-			"message":     "OK",
+			"status":      consts.OK,
 		})
 
 	})

@@ -1,0 +1,10 @@
+package consts
+
+const (
+	GLOBAL_QUOTA_NOT_ENOUGH = "GLOBAL_QUOTA_NOT_ENOUGH"
+	QUOTA_NOT_ENOUGH        = "QUOTA_NOT_ENOUGH"
+	USER_QUOTA_UPDATED      = "USER_QUOTA_UPDATED"
+	SERVICE_QUOTA_UPDATED   = "SERVICE_QUOTA_UPDATED"
+	OK                      = "OK"
+	FAILED                  = "FAILED"
+)

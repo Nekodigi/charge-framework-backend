@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Nekodigi/charge-framework-backend/consts"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,13 +28,13 @@ func (q *Quota) HandleAddQuota(e *gin.Engine) {
 			user.RemainQuota += amount
 			q.Fs.UpdateUser(user)
 			c.JSON(200, gin.H{
-				"message": "USER_QUOTA_UPDATED",
+				"status": consts.USER_QUOTA_UPDATED,
 			})
 		} else {
 			service.RemainQuota += amount
 			q.Fs.UpdateService(service)
 			c.JSON(200, gin.H{
-				"message": "SERVICE_QUOTA_UPDATED",
+				"status": consts.SERVICE_QUOTA_UPDATED,
 			})
 		}
 	})
