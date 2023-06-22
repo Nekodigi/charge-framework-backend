@@ -9,9 +9,9 @@ import (
 	"github.com/stripe/stripe-go/v74/checkout/session"
 )
 
-func (co *Subscription) HandleSubscribe(e *gin.Engine) {
+func (s *Subscription) HandleSubscribe(e *gin.Engine) {
 	// our basic charge API route
-	stripe.Key = co.StripeSecret
+	stripe.Key = s.StripeSecret
 	e.GET("/subscribe/:service_id/:user_id/:plan_id", func(c *gin.Context) {
 		serviceId := c.Param("service_id")
 		planId := c.Param("plan_id")
@@ -22,21 +22,31 @@ func (co *Subscription) HandleSubscribe(e *gin.Engine) {
 			return
 		}
 
+		user := s.Fs.GetUserById(serviceId, userId)
+		service := s.Fs.GetServiceById(serviceId)
+
+		mode := "subscription"
+		priceId := service.Plan[planId].PriceId
+		if user.Subscription != "" {
+			priceId = service.Plan["free"].PriceId
+			mode = "payment"
+		}
 		params := &stripe.CheckoutSessionParams{
 			LineItems: []*stripe.CheckoutSessionLineItemParams{
 				{
-					Price:    stripe.String("price_1NHh0RErQLZ12HR8rh6waQDL"),
-					Quantity: stripe.Int64(1),
+					Price:    stripe.String(priceId),
+					Quantity: stripe.Int64(int64(service.Plan[planId].Quota)),
 				},
 			},
 			AllowPromotionCodes: stripe.Bool(true),
-			Mode:                stripe.String("subscription"),
-			SuccessURL:          stripe.String("https://example.com/success"),
-			CancelURL:           stripe.String("https://example.com/success"),
+			Mode:                stripe.String(mode),
+			SuccessURL:          stripe.String("https://nekodigi.com"),
+			CancelURL:           stripe.String("https://nekodigi.com"),
 		}
 		params.AddMetadata("service_id", serviceId)
 		params.AddMetadata("plan_id", planId)
 		params.AddMetadata("user_id", userId)
+		params.AddMetadata("mode", mode)
 		params.AddExpand("payment_intent") // be careful
 
 		s, _ := session.New(params)

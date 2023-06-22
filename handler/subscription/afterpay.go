@@ -64,6 +64,7 @@ func (a *Subscription) HandleAfterPay(e *gin.Engine) {
 		case "invoice.payment_succeeded": //quota update for free plan will be delegated
 			ctx := context.Background()
 			a.Fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+				fmt.Println(event.Data.Object["metadata"])
 				user := a.Fs.GetUserBySubIdTx(tx, event.Data.Object["subscription"].(string))
 				service := a.Fs.GetServiceByIdTx(tx, user.ServiceId)
 				user.RemainQuota = user.AllocQuota
