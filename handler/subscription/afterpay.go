@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gin-gonic/gin"
@@ -38,30 +39,59 @@ func (a *Subscription) HandleAfterPay(e *gin.Engine) {
 			serviceId := metadata["service_id"].(string)
 			userId := metadata["user_id"].(string)
 			planId := metadata["plan_id"].(string)
+			mode := metadata["mode"].(string)
 			if serviceId == "" || userId == "" || planId == "" {
 				log.Fatalf("Invalid subscribe: %v", metadata)
 				c.Status(http.StatusBadRequest)
 				return
 			}
-			fmt.Println("tx ready!")
-			ctx := context.Background()
-			a.Fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-				fmt.Println("tx start!")
-				user := a.Fs.GetUserByIdTx(tx, serviceId, userId)
-				user.Subscription = event.Data.Object["subscription"].(string)
-				service := a.Fs.GetServiceByIdTx(tx, serviceId)
-				user.Plan = planId
-				fmt.Println(serviceId, service)
-				plan := service.Plan[user.Plan]
-				user.AllocQuota = plan.Quota
-				a.Fs.UpdateUserTx(tx, user)
-				fmt.Println(user, service)
-				fmt.Println("Subscription was created!")
-				return nil
-			})
+			if mode == "payment" {
+				fmt.Println("pay tx ready!")
+				ctx := context.Background()
+				err := a.Fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+					user := a.Fs.GetUserByIdTx(tx, serviceId, userId)
+					quota, _ := strconv.ParseFloat(metadata["quota"].(string), 64)
+					user.RemainQuota += quota
+					a.Fs.UpdateUserTx(tx, user)
+					fmt.Println(serviceId, userId, quota)
+					fmt.Println("Payment was created!")
+					return nil
+				})
+				if err != nil {
+					log.Printf("Failed to process payment: %v\n", err)
+					c.Status(http.StatusBadRequest)
+					return
+				}
+				return
+			} else {
+				fmt.Println("sub tx ready!")
+				ctx := context.Background()
+				err := a.Fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+					user := a.Fs.GetUserByIdTx(tx, serviceId, userId)
+					user.Subscription = event.Data.Object["subscription"].(string)
+					service := a.Fs.GetServiceByIdTx(tx, serviceId)
+					user.Plan = planId
+					fmt.Println(serviceId, service)
+					plan := service.Plan[user.Plan]
+					user.AllocQuota = plan.Quota
+					a.Fs.UpdateUserTx(tx, user)
+					fmt.Println(user, service)
+					fmt.Println("Subscription was created!")
+					return nil
+				})
+				if err != nil {
+					log.Printf("Failed to subscribe user: %v\n", err)
+					c.Status(http.StatusBadRequest)
+					return
+				}
+			}
 
 		// ... handle other event types
 		case "invoice.payment_succeeded": //quota update for free plan will be delegated
+			if event.Data.Object["subscription"].(string) == "" {
+				fmt.Println("Not subscription")
+				return
+			}
 			ctx := context.Background()
 			a.Fs.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 				fmt.Println(event.Data.Object["metadata"])

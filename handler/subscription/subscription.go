@@ -14,6 +14,7 @@ type (
 
 func (s *Subscription) Handle(e *gin.Engine) {
 	s.HandleAfterPay(e)
+	s.HandlePurchase(e)
 	s.HandleSubscribe(e)
 	s.HandleCancel(e)
 }
