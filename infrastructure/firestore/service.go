@@ -28,6 +28,20 @@ func DocToService(doc *firestore.DocumentSnapshot) models.Service {
 	return service
 }
 
+func (fs *Firestore) GetServiceList() []models.Service {
+	ctx := context.Background()
+	iter := fs.Client.Collection("payment").Documents(ctx)
+	var services []models.Service
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			break
+		}
+		services = append(services, DocToService(doc))
+	}
+	return services
+}
+
 func (fs *Firestore) GetServiceById(serviceId string) models.Service {
 	ctx := context.Background()
 	doc, err := fs.Client.Collection("payment").Doc(serviceId).Get(ctx)

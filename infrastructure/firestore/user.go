@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/Nekodigi/charge-framework-backend/infrastructure/stripe"
 	"github.com/Nekodigi/charge-framework-backend/models"
 	"github.com/Nekodigi/charge-framework-backend/utils"
 )
@@ -87,6 +88,7 @@ func (fs *Firestore) UpdateUserTx(tx *firestore.Transaction, user models.User) {
 func (fs *Firestore) NewUser(userId string, srv models.Service) models.User {
 	user := models.User{
 		Id:           userId,
+		CustomerId:   stripe.NewCustomer().ID,
 		ServiceId:    srv.Id,
 		Plan:         "free",
 		Status:       "",

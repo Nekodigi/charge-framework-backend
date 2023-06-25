@@ -10,7 +10,7 @@ import (
 )
 
 func (q *Quota) HandleAddQuota(e *gin.Engine) {
-	e.POST("/add_quota/:service_id/:user_id", func(c *gin.Context) {
+	e.PUT("/quota/add/:service_id/:user_id", func(c *gin.Context) {
 		serviceId := c.Param("service_id")
 		userId := c.Param("user_id")
 		amount, err := strconv.ParseFloat(c.Query("amount"), 64)

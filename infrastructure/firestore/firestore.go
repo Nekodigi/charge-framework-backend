@@ -2,6 +2,7 @@ package firestore
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"cloud.google.com/go/firestore"
@@ -39,4 +40,17 @@ func NewFirestore() *Firestore {
 	}
 
 	return fs
+}
+
+func (fs *Firestore) CreateUniqueID() string {
+	ctx := context.Background()
+	doc, _, err := fs.Client.Collection("unique_id").Add(ctx, map[string]interface{}{
+		"creator": "service_framework",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	} else {
+		fmt.Printf("Created new id:%s\n")
+	}
+	return doc.ID
 }

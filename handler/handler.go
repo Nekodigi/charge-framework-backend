@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Nekodigi/charge-framework-backend/handler/quota"
-	"github.com/Nekodigi/charge-framework-backend/handler/subscription"
+	"github.com/Nekodigi/charge-framework-backend/handler/service"
+	"github.com/Nekodigi/charge-framework-backend/handler/user"
 	infraFirestore "github.com/Nekodigi/charge-framework-backend/infrastructure/firestore"
+	infraStripe "github.com/Nekodigi/charge-framework-backend/infrastructure/stripe"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go"
@@ -16,6 +17,7 @@ import (
 var (
 	stripeSecret string
 	fs           *infraFirestore.Firestore
+	st           *infraStripe.Stripe
 )
 
 func init() {
@@ -28,6 +30,7 @@ func init() {
 	stripe.Key = stripeSecret
 	fmt.Println(stripeSecret)
 	fs = infraFirestore.NewFirestore()
+	st = infraStripe.NewStripe(stripeSecret)
 }
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -48,7 +51,7 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func Router(e *gin.Engine) {
 	e.Use(CORSMiddleware())
-	(&subscription.Subscription{stripeSecret, fs}).Handle(e)
-	(&quota.Quota{Fs: fs}).Handle(e)
+	(&user.User{stripeSecret, fs, st}).Handle(e)
+	(&service.Service{fs}).Handle(e)
 	e.GET("/ping", func(ctx *gin.Context) { ctx.String(http.StatusOK, "pong") })
 }

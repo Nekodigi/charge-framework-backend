@@ -8,7 +8,7 @@ import (
 )
 
 func (q *Quota) HandleCheckQuota(e *gin.Engine) {
-	e.POST("/check_quota/:service_id/:user_id", func(c *gin.Context) {
+	e.GET("/quota/:service_id/:user_id", func(c *gin.Context) {
 		serviceId := c.Param("service_id")
 		userId := c.Param("user_id")
 		if serviceId == "" || userId == "" {
