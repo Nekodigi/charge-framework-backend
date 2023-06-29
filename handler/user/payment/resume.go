@@ -15,6 +15,7 @@ func (p *Payment) HandleResume(e *gin.Engine) {
 		serviceId := c.Param("service_id")
 		userId := c.Param("user_id")
 		if serviceId == "" || userId == "" {
+			fmt.Printf("serviceId:%s, userId:%s\n", serviceId, userId)
 			c.Status(http.StatusBadRequest)
 			return
 		}

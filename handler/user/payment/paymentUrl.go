@@ -21,6 +21,7 @@ func (p *Payment) HandlePaymentUrl(e *gin.Engine) {
 		cancelUrl := c.Query("cancel_url")
 
 		if serviceId == "" || userId == "" || successUrl == "" || cancelUrl == "" {
+			fmt.Printf("serviceId:%s, userId:%s, successUrl:%s, cancelUrl:%s\n", serviceId, userId, successUrl, cancelUrl)
 			c.Status(http.StatusBadRequest)
 			return
 		}
