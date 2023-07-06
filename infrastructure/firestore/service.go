@@ -20,8 +20,17 @@ func DocToService(doc *firestore.DocumentSnapshot) models.Service {
 		//fmt.Printf("Plan data: %#v\n", key, plan)
 		plan := plan.(map[string]interface{})
 		var p models.Plan
-		j, _ := json.Marshal(plan)
-		_ = json.Unmarshal(j, &p)
+		fmt.Println(plan)
+		j, err := json.Marshal(plan)
+		if err != nil {
+			fmt.Println(err)
+		}
+		//fmt.Println(j)
+		err = json.Unmarshal(j, &p)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(p)
 		service.Plan[key] = p
 	}
 	service.UpdateAt = doc.Data()["updateAt"].(time.Time)
